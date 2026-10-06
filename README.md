@@ -23,7 +23,7 @@ What it cannot do:
 
 ## What you need
 
-- A site with Vibetiles, and an account that may edit the design (an administrator). Or a website without WordPress that carries the Live Design kit; open it once with `?design` in the address to be its owner.
+- A site with Vibetiles, and an account that may edit the design (an administrator). Or a website without WordPress that carries [Vibetiles for HTML sites](https://github.com/manuelesposito/vibetiles-html); open it once with `?design` in the address to be its owner.
 - [Node.js](https://nodejs.org) 18 or newer.
 - Google Chrome.
 
