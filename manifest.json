@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "vibetiles",
   "display_name": "Vibetiles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Style your website from a chat, through Vibetiles, on your real page in a Chrome window you can watch.",
   "long_description": "Your site runs Vibetiles, the design panel on the live page. This extension opens it for the AI: it reads every setting and what it means, changes settings by name as one step you can undo, checks that the page still reads well, and looks at the page. It publishes only when you ask. The first time, a Chrome window opens on your page: log in to your site there, open the page again, and ask again. Needs Google Chrome.",
   "author": {
@@ -25,7 +25,7 @@
       "command": "node",
       "args": ["${__dirname}/index.mjs"],
       "env": {
-        "LIVE_DESIGN_URL": "${user_config.site_url}"
+        "VIBETILES_URL": "${user_config.site_url}"
       }
     }
   },

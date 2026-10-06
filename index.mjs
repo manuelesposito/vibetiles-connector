@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /*
- * LIVE DESIGN CONNECTOR: a small MCP server over window.LiveDesign.
+ * VIBETILES CONNECTOR: a small MCP server over window.Vibetiles.
  *
  * An AI styles a website from a chat through the same door the owner's design panel uses: it reads what every
  * setting means, changes settings by name as one step the owner can undo, gets a reading check back in numbers
  * (contrast, text size, line length), and can look at the page. It works in a Chrome window you can watch.
  *
- * LIVE_DESIGN_URL       the page to style: a post on a site with Vibetiles, where the OWNER logs in once in
+ * VIBETILES_URL         the page to style: a post on a site with Vibetiles, where the OWNER logs in once in
  *                       the window this opens (the door is only on the owner's page). Required.
- * LIVE_DESIGN_HEADLESS  1 = no window (for tests)
- * LIVE_DESIGN_PROFILE   the Chrome profile it keeps (default ~/.cache/live-design-panel); the login stays there.
+ * VIBETILES_HEADLESS    1 = no window (for tests)
+ * VIBETILES_PROFILE     the Chrome profile it keeps (default ~/.cache/vibetiles); the login stays there.
+ * (The names from before 0.3.0, LIVE_DESIGN_URL and so on, still work.)
  *
  * Needs Node 18 or newer and Google Chrome. MCP over stdio is one JSON message per line.
  */
@@ -20,12 +21,13 @@ let chromium;
 try { ({ chromium } = await import('playwright-core')); }
 catch (e) { if (!process.env.PLAYWRIGHT_CORE) { process.stderr.write('vibetiles: needs playwright-core (npm i playwright-core, or set PLAYWRIGHT_CORE)\n'); process.exit(1); } ({ chromium } = await import(process.env.PLAYWRIGHT_CORE)); }
 
-const URL_ = process.env.LIVE_DESIGN_URL;
-if (!URL_) { process.stderr.write('vibetiles: set LIVE_DESIGN_URL to a post on your site, e.g. https://example.com/hello-world/\n'); process.exit(1); }
-const HEADLESS = process.env.LIVE_DESIGN_HEADLESS === '1';
-const PROFILE = process.env.LIVE_DESIGN_PROFILE || path.join(os.homedir(), '.cache', 'live-design-panel'); /* the page keeps its styles between chats */
-/* the profile's old name (0.1.x): move it once, so the login stays */
-if (!process.env.LIVE_DESIGN_PROFILE) { const OLD = path.join(os.homedir(), '.cache', 'live-design-connector'); try { if (fs.existsSync(OLD) && !fs.existsSync(PROFILE)) fs.renameSync(OLD, PROFILE); } catch (e) { /* keep going with a fresh profile */ } }
+const env = (k) => process.env['VIBETILES_' + k] || process.env['LIVE_DESIGN_' + k];
+const URL_ = env('URL');
+if (!URL_) { process.stderr.write('vibetiles: set VIBETILES_URL to a post on your site, e.g. https://example.com/hello-world/\n'); process.exit(1); }
+const HEADLESS = env('HEADLESS') === '1';
+const PROFILE = env('PROFILE') || path.join(os.homedir(), '.cache', 'vibetiles'); /* the page keeps its styles between chats */
+/* the profile's old names (0.1.x, 0.2.x): move it once, so the login stays */
+if (!env('PROFILE')) for (const n of ['live-design-panel', 'live-design-connector']) { const OLD = path.join(os.homedir(), '.cache', n); try { if (fs.existsSync(OLD) && !fs.existsSync(PROFILE)) fs.renameSync(OLD, PROFILE); } catch (e) { /* keep going with a fresh profile */ } }
 
 let ctx = null, page = null, opening = null;
 /* ONE browser for all calls: an AI sends several at once, and a second launch on the same profile fails */
@@ -43,11 +45,11 @@ function thePage() {
 /* The door is on the page only for the owner: on a site, the first call may meet a page with no one logged in. */
 async function door() {
   const p = await thePage();
-  const ok = await p.waitForFunction(() => window.LiveDesign, null, { timeout:15000 }).then(() => true, () => false);
+  const ok = await p.waitForFunction(() => window.Vibetiles || window.LiveDesign, null, { timeout:15000 }).then(() => true, () => false);
   if (!ok) throw new Error('No Vibetiles on ' + p.url() + '. On a WordPress site: log in as the owner in the Chrome window that opened, go back to a post, then try again. The site needs Vibetiles.');
   return p;
 }
-const call = async (fn, ...args) => (await door()).evaluate(({ fn, args }) => window.LiveDesign[fn](...args), { fn, args });
+const call = async (fn, ...args) => (await door()).evaluate(({ fn, args }) => (window.Vibetiles || window.LiveDesign)[fn](...args), { fn, args });
 
 const changes = { type:'object', description:'Settings by name, e.g. { "corners": "large", "space": "+1", "roles.read.size": 20, "bstyle": "tinted" }. A choice by value or label; a number goes to the nearest step; "+1"/"-1" moves one step. Names and meanings come from describe.', additionalProperties:true };
 const why = { type:'string', description:'Why, in a few words. The owner sees it in Versions.' };
@@ -64,7 +66,7 @@ const TOOLS = [
   { name:'load_style', description:'Load a whole style (what get_style returns), as one undoable step.', inputSchema:{ type:'object', properties:{ style:{ type:'object' }, why }, required:['style'] }, run:(a) => call('load', a.style, a.why || '') },
   { name:'choose_style', description:'Switch to another style by id (ids come from describe).', inputSchema:{ type:'object', properties:{ id:{ type:'string' } }, required:['id'] }, run:(a) => call('choose', a.id) },
   { name:'open_panel', description:'Open the owner\'s design panel on the page, so the person watching sees it.', inputSchema:{ type:'object', properties:{} }, run:(a) => call('open', a.section) },
-  { name:'publish', description:'ONLY WHEN THE OWNER ASKS TO PUBLISH. The look on the page becomes a style on the site and, unless default is false, what every visitor opens in. On WordPress it is live at once. On a site that is only files (no WordPress) the answer carries the new live-design/site.js: write it into the site\'s folder, replacing the whole file, and put the site online again.', inputSchema:{ type:'object', properties:{ name:{ type:'string', description:'the style\'s name on the site (default: its current name)' }, default:{ type:'boolean', description:'make it what visitors open in (default true)' } } },
+  { name:'publish', description:'ONLY WHEN THE OWNER ASKS TO PUBLISH. The look on the page becomes a style on the site and, unless default is false, what every visitor opens in. On WordPress it is live at once. On a site that is only files (no WordPress) the answer carries the new site.js and its path (vibetiles/site.js): write it into the site\'s folder, replacing the whole file, and put the site online again.', inputSchema:{ type:'object', properties:{ name:{ type:'string', description:'the style\'s name on the site (default: its current name)' }, default:{ type:'boolean', description:'make it what visitors open in (default true)' } } },
     run:(a) => call('publish', { name:a.name, default:a.default }) },
   { name:'look', description:'See the page: a picture of the window, or of one part (a CSS selector such as "h1", "main", "article"). Use it to judge a change with your own eyes.', inputSchema:{ type:'object', properties:{ part:{ type:'string' }, whole:{ type:'boolean', description:'the whole page, not only the window' } } },
     run:async (a) => { const p = await door(); const el = a.part ? await p.$(a.part) : null;
@@ -74,7 +76,7 @@ const TOOLS = [
 
 function send(msg) { process.stdout.write(JSON.stringify(msg) + '\n'); }
 async function handle(m) {
-  if (m.method === 'initialize') return send({ jsonrpc:'2.0', id:m.id, result:{ protocolVersion:(m.params && m.params.protocolVersion) || '2025-06-18', capabilities:{ tools:{} }, serverInfo:{ name:'vibetiles', version:'0.2.0' },
+  if (m.method === 'initialize') return send({ jsonrpc:'2.0', id:m.id, result:{ protocolVersion:(m.params && m.params.protocolVersion) || '2025-06-18', capabilities:{ tools:{} }, serverInfo:{ name:'vibetiles', version:'0.3.0' },
     instructions:'Vibetiles styles a website. Call describe first; every setting says what it means. Change with set_settings (one undo step, give a why), check the reading check it returns, and use look to see the result.' } });
   if (m.method === 'ping') return send({ jsonrpc:'2.0', id:m.id, result:{} });
   if (m.method === 'tools/list') return send({ jsonrpc:'2.0', id:m.id, result:{ tools:TOOLS.map(({ run, ...t }) => t) } });

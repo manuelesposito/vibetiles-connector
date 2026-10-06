@@ -1,6 +1,6 @@
 {
   "name": "vibetiles-connector",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Let an AI style your website from a chat, through Vibetiles: every setting by name, one undo step per change, a reading check in numbers.",
   "type": "module",
   "bin": { "vibetiles-connector": "index.mjs" },
