@@ -1,15 +1,15 @@
 {
-  "name": "live-design-panel-connector",
-  "version": "0.1.2",
-  "description": "Let an AI style your website from a chat, through Live Design Panel: every setting by name, one undo step per change, a reading check in numbers.",
+  "name": "vibetiles-connector",
+  "version": "0.2.0",
+  "description": "Let an AI style your website from a chat, through Vibetiles: every setting by name, one undo step per change, a reading check in numbers.",
   "type": "module",
-  "bin": { "live-design-panel-connector": "index.mjs" },
+  "bin": { "vibetiles-connector": "index.mjs" },
   "files": ["index.mjs", "README.md", "LICENSE"],
   "engines": { "node": ">=18" },
   "dependencies": { "playwright-core": "^1.55.0" },
   "license": "GPL-2.0-or-later",
   "author": "Elmastudio (https://elmastudio.de)",
-  "homepage": "https://github.com/manuelesposito/live-design-panel-connector",
-  "repository": { "type": "git", "url": "git+https://github.com/manuelesposito/live-design-panel-connector.git" },
-  "keywords": ["mcp", "design", "wordpress", "live-design-panel"]
+  "homepage": "https://elmastudio.de/en/vibetiles/",
+  "repository": { "type": "git", "url": "git+https://github.com/manuelesposito/vibetiles-connector.git" },
+  "keywords": ["mcp", "design", "wordpress", "vibetiles"]
 }

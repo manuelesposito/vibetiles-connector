@@ -1,8 +1,8 @@
-# Live Design Panel Connector
+# Vibetiles Connector
 
 Let an AI style your website from a chat.
 
-Your site runs [Live Design Panel](https://github.com/manuelesposito/live-design-panel), the design panel on the live page. This connector opens it for an AI assistant. You say "make the headings bigger and the page a little warmer", and the AI turns the same dials you would, on your real page, in a Chrome window you can watch.
+Your site runs [Vibetiles](https://elmastudio.de/en/vibetiles/), the design panel on the live page. This connector opens it for an AI assistant. You say "make the headings bigger and the page a little warmer", and the AI turns the same dials you would, on your real page, in a Chrome window you can watch.
 
 **Beta.** It works, and it is still being improved.
 
@@ -23,7 +23,7 @@ What it cannot do:
 
 ## What you need
 
-- A site with Live Design Panel (0.12.5 or newer to publish from a chat), and an account that may edit the design (an administrator). Or a website without WordPress that carries the Live Design kit; open it once with `?design` in the address to be its owner.
+- A site with Vibetiles, and an account that may edit the design (an administrator). Or a website without WordPress that carries the Live Design kit; open it once with `?design` in the address to be its owner.
 - [Node.js](https://nodejs.org) 18 or newer.
 - Google Chrome.
 
@@ -34,7 +34,7 @@ Pick a post on your site; the reading check measures its article. In the lines b
 **Claude Code**
 
 ```sh
-claude mcp add live-design-panel -e LIVE_DESIGN_URL=https://example.com/hello-world/ -- npx -y github:manuelesposito/live-design-panel-connector
+claude mcp add vibetiles -e LIVE_DESIGN_URL=https://example.com/hello-world/ -- npx -y github:manuelesposito/vibetiles-connector
 ```
 
 **Claude Desktop**: open Settings, then Developer, then Edit Config, and add this to `claude_desktop_config.json`:
@@ -42,9 +42,9 @@ claude mcp add live-design-panel -e LIVE_DESIGN_URL=https://example.com/hello-wo
 ```json
 {
   "mcpServers": {
-    "live-design-panel": {
+    "vibetiles": {
       "command": "npx",
-      "args": ["-y", "github:manuelesposito/live-design-panel-connector"],
+      "args": ["-y", "github:manuelesposito/vibetiles-connector"],
       "env": { "LIVE_DESIGN_URL": "https://example.com/hello-world/" }
     }
   }
@@ -53,7 +53,7 @@ claude mcp add live-design-panel -e LIVE_DESIGN_URL=https://example.com/hello-wo
 
 Restart Claude Desktop afterwards.
 
-**Any other app that speaks MCP**: run `npx -y github:manuelesposito/live-design-panel-connector` with `LIVE_DESIGN_URL` set.
+**Any other app that speaks MCP**: run `npx -y github:manuelesposito/vibetiles-connector` with `LIVE_DESIGN_URL` set.
 
 ## The first time
 

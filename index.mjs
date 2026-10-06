@@ -6,7 +6,7 @@
  * setting means, changes settings by name as one step the owner can undo, gets a reading check back in numbers
  * (contrast, text size, line length), and can look at the page. It works in a Chrome window you can watch.
  *
- * LIVE_DESIGN_URL       the page to style: a post on a site with Live Design Panel, where the OWNER logs in once in
+ * LIVE_DESIGN_URL       the page to style: a post on a site with Vibetiles, where the OWNER logs in once in
  *                       the window this opens (the door is only on the owner's page). Required.
  * LIVE_DESIGN_HEADLESS  1 = no window (for tests)
  * LIVE_DESIGN_PROFILE   the Chrome profile it keeps (default ~/.cache/live-design-panel); the login stays there.
@@ -18,10 +18,10 @@ import os from 'os';
 import path from 'path';
 let chromium;
 try { ({ chromium } = await import('playwright-core')); }
-catch (e) { if (!process.env.PLAYWRIGHT_CORE) { process.stderr.write('live-design: needs playwright-core (npm i playwright-core, or set PLAYWRIGHT_CORE)\n'); process.exit(1); } ({ chromium } = await import(process.env.PLAYWRIGHT_CORE)); }
+catch (e) { if (!process.env.PLAYWRIGHT_CORE) { process.stderr.write('vibetiles: needs playwright-core (npm i playwright-core, or set PLAYWRIGHT_CORE)\n'); process.exit(1); } ({ chromium } = await import(process.env.PLAYWRIGHT_CORE)); }
 
 const URL_ = process.env.LIVE_DESIGN_URL;
-if (!URL_) { process.stderr.write('live-design: set LIVE_DESIGN_URL to a post on your site, e.g. https://example.com/hello-world/\n'); process.exit(1); }
+if (!URL_) { process.stderr.write('vibetiles: set LIVE_DESIGN_URL to a post on your site, e.g. https://example.com/hello-world/\n'); process.exit(1); }
 const HEADLESS = process.env.LIVE_DESIGN_HEADLESS === '1';
 const PROFILE = process.env.LIVE_DESIGN_PROFILE || path.join(os.homedir(), '.cache', 'live-design-panel'); /* the page keeps its styles between chats */
 /* the profile's old name (0.1.x): move it once, so the login stays */
@@ -44,7 +44,7 @@ function thePage() {
 async function door() {
   const p = await thePage();
   const ok = await p.waitForFunction(() => window.LiveDesign, null, { timeout:15000 }).then(() => true, () => false);
-  if (!ok) throw new Error('No Live Design on ' + p.url() + '. On a WordPress site: log in as the owner in the Chrome window that opened, go back to a post, then try again. The site needs Live Design Panel with the new window.');
+  if (!ok) throw new Error('No Vibetiles on ' + p.url() + '. On a WordPress site: log in as the owner in the Chrome window that opened, go back to a post, then try again. The site needs Vibetiles.');
   return p;
 }
 const call = async (fn, ...args) => (await door()).evaluate(({ fn, args }) => window.LiveDesign[fn](...args), { fn, args });
@@ -60,7 +60,7 @@ const TOOLS = [
   { name:'explain', description:'The current style in one plain paragraph, to tell the person what you see.', inputSchema:{ type:'object', properties:{} }, run:() => call('explain') },
   { name:'undo', description:'Take back the last change (yours or the owner\'s).', inputSchema:{ type:'object', properties:{} }, run:() => call('undo') },
   { name:'redo', description:'Put back what undo took.', inputSchema:{ type:'object', properties:{} }, run:() => call('redo') },
-  { name:'get_style', description:'The whole style as a record, with a link that carries it. Keep it, or load it on another site with Live Design.', inputSchema:{ type:'object', properties:{} }, run:() => call('style') },
+  { name:'get_style', description:'The whole style as a record, with a link that carries it. Keep it, or load it on another site with Vibetiles.', inputSchema:{ type:'object', properties:{} }, run:() => call('style') },
   { name:'load_style', description:'Load a whole style (what get_style returns), as one undoable step.', inputSchema:{ type:'object', properties:{ style:{ type:'object' }, why }, required:['style'] }, run:(a) => call('load', a.style, a.why || '') },
   { name:'choose_style', description:'Switch to another style by id (ids come from describe).', inputSchema:{ type:'object', properties:{ id:{ type:'string' } }, required:['id'] }, run:(a) => call('choose', a.id) },
   { name:'open_panel', description:'Open the owner\'s design panel on the page, so the person watching sees it.', inputSchema:{ type:'object', properties:{} }, run:(a) => call('open', a.section) },
@@ -74,8 +74,8 @@ const TOOLS = [
 
 function send(msg) { process.stdout.write(JSON.stringify(msg) + '\n'); }
 async function handle(m) {
-  if (m.method === 'initialize') return send({ jsonrpc:'2.0', id:m.id, result:{ protocolVersion:(m.params && m.params.protocolVersion) || '2025-06-18', capabilities:{ tools:{} }, serverInfo:{ name:'live-design-panel', version:'0.1.2' },
-    instructions:'Live Design styles a website. Call describe first; every setting says what it means. Change with set_settings (one undo step, give a why), check the reading check it returns, and use look to see the result.' } });
+  if (m.method === 'initialize') return send({ jsonrpc:'2.0', id:m.id, result:{ protocolVersion:(m.params && m.params.protocolVersion) || '2025-06-18', capabilities:{ tools:{} }, serverInfo:{ name:'vibetiles', version:'0.2.0' },
+    instructions:'Vibetiles styles a website. Call describe first; every setting says what it means. Change with set_settings (one undo step, give a why), check the reading check it returns, and use look to see the result.' } });
   if (m.method === 'ping') return send({ jsonrpc:'2.0', id:m.id, result:{} });
   if (m.method === 'tools/list') return send({ jsonrpc:'2.0', id:m.id, result:{ tools:TOOLS.map(({ run, ...t }) => t) } });
   if (m.method === 'tools/call') { queue = queue.then(() => callTool(m)); return queue; }
