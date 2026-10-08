@@ -4,6 +4,8 @@ Let an AI style your website from a chat.
 
 Your site runs [Vibetiles](https://elmastudio.de/en/vibetiles/), the design panel on the live page. This connector opens it for an AI assistant. You say "make the headings bigger and the page a little warmer", and the AI turns the same dials you would, on your real page, in a Chrome window you can watch.
 
+![The Vibetiles button](.github/button.png)
+
 **Beta.** It works, and it is still being improved.
 
 ## What the AI can do
