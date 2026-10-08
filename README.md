@@ -37,7 +37,9 @@ Pick a post on your site; the reading check measures its article. In the lines b
 claude mcp add vibetiles -e VIBETILES_URL=https://example.com/hello-world/ -- npx -y github:manuelesposito/vibetiles-connector
 ```
 
-**Claude Desktop**: open Settings, then Developer, then Edit Config, and add this to `claude_desktop_config.json`:
+**Claude Desktop, one click**: download [vibetiles.mcpb](https://github.com/manuelesposito/vibetiles-connector/releases/latest/download/vibetiles.mcpb) and open it. Claude Desktop installs the connector and asks for your site's address.
+
+**Claude Desktop, by hand**: open Settings, then Developer, then Edit Config, and add this to `claude_desktop_config.json`:
 
 ```json
 {
